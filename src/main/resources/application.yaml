@@ -27,7 +27,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,prometheus,metrics,info
+        include: health
       base-path: /
   endpoint:
     health:
@@ -41,7 +41,7 @@ management:
           include: readinessState,db
 
 springdoc:
-  packages-to-scan: com.rlrio.controller
+  packages-to-scan: com.rlrio.voting.controller
   paths-to-math: /**
   swagger-ui:
     use-root-path: true
