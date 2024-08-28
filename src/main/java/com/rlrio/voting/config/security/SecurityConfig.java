@@ -1,5 +1,6 @@
 package com.rlrio.voting.config.security;
 
+import com.rlrio.voting.model.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,8 +35,8 @@ public class SecurityConfig {
                 .requestCache(AbstractHttpConfigurer::disable)
                 .servletApi(AbstractHttpConfigurer::disable)
                 .securityContext(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers(
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(
                                 "/",
                                 "/v3/api-docs/**",
                                 "/error",
@@ -46,7 +47,9 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/auth/v1/**",
                                 "/h2-console/**"
-                        ).permitAll().anyRequest().authenticated()
+                        ).permitAll()
+                        .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(policy -> policy.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
