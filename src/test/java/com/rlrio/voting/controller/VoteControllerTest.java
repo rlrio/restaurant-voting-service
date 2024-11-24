@@ -19,9 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.rlrio.voting.util.AuthUtil.mockAuthentication;
-import static com.rlrio.voting.util.GenerateEntitiesUtil.createRestaurantEntity;
-import static com.rlrio.voting.util.GenerateEntitiesUtil.createUserEntity;
-import static com.rlrio.voting.util.GenerateEntitiesUtil.createVoteEntity;
+import static com.rlrio.voting.util.EntityGenerationUtil.createRestaurantEntity;
+import static com.rlrio.voting.util.EntityGenerationUtil.createUserEntity;
+import static com.rlrio.voting.util.EntityGenerationUtil.createVoteEntity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

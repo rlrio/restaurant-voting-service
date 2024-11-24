@@ -10,7 +10,7 @@ import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.RandomStringUtils;
 
 @UtilityClass
-public class GenerateEntitiesUtil {
+public class EntityGenerationUtil {
 
     public static UserEntity createUserEntity(String username, Role role) {
         return new UserEntity()
