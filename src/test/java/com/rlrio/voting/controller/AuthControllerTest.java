@@ -6,6 +6,7 @@ import com.rlrio.voting.controller.dto.auth.UserDto;
 import com.rlrio.voting.model.Role;
 import com.rlrio.voting.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,6 +29,11 @@ class AuthControllerTest {
     private UserRepository userRepository;
     @Autowired
     private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
 
     @Test
     void testRegisterUser() throws Exception {
@@ -81,7 +87,6 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(tokenDtoGiven))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-
     }
 
     @Test

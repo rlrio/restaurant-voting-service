@@ -42,12 +42,13 @@ public class SecurityConfig {
                                 "/error",
                                 "/health",
                                 "/swagger-ui/**",
-                                "/swagger-ui/index.html",
+                                "/swagger-ui.html",
                                 "/public/**",
                                 "/favicon.ico",
                                 "/auth/v1/**",
                                 "/h2-console/**"
                         ).permitAll()
+                        .requestMatchers("/vote/**").hasRole(Role.USER.name())
                         .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )

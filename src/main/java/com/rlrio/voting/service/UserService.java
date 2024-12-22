@@ -2,8 +2,8 @@ package com.rlrio.voting.service;
 
 import com.rlrio.voting.model.UserEntity;
 import com.rlrio.voting.repository.UserRepository;
+import com.rlrio.voting.service.exception.NotFoundException;
 import com.rlrio.voting.service.exception.VotingException;
-import java.text.MessageFormat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import static java.text.MessageFormat.format;
 
 @Slf4j
 @Service
@@ -30,14 +32,12 @@ public class UserService implements UserDetailsService {
 
     public UserEntity findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new VotingException(MessageFormat.format("user {0} is not found", username)));
+                .orElseThrow(() -> new NotFoundException(format("user {0} is not found", username)));
     }
 
     public void checkIfUserExists(String username) {
         userRepository.findByUsername(username)
-                .ifPresent(user -> { throw new VotingException(
-                        MessageFormat.format("user {0} already exists", username));
-                });
+                .ifPresent(user -> { throw new VotingException(format("user {0} already exists", username));});
     }
 
     public void save(UserEntity user) {

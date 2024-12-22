@@ -123,4 +123,72 @@ class AdminRestaurantControllerTest {
         assertTrue(menuFromDb.isPresent());
         assertEquals(menuDtoGiven.getMenuItems().get(0).getName(), menuFromDb.get().getMenuItems().get(0).getName());
     }
+
+    @Test
+    void testUpdateNonExistentRestaurant() throws Exception {
+        userRepository.save(createUserEntity("admin", Role.ADMIN));
+        mockAuthentication("admin", Role.ADMIN);
+
+        mockMvc.perform(put("/admin/restaurant/v1/999")
+                        .content(objectMapper.writeValueAsString(new RestaurantCreateOrUpdateDto()
+                                .setName("non-existent-restaurant")))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testSetMenuForNonExistentRestaurant() throws Exception {
+        userRepository.save(createUserEntity("admin", Role.ADMIN));
+        mockAuthentication("admin", Role.ADMIN);
+        var menuDto = new MenuDto()
+                .setMenuItems(List.of(new MenuItem()
+                        .setName("testDish")
+                        .setPrice(new BigDecimal("10.00"))));
+
+        mockMvc.perform(post("/admin/restaurant/v1/999/menu")
+                        .content(objectMapper.writeValueAsString(menuDto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testCreateRestaurantWithInvalidName() throws Exception {
+        userRepository.save(createUserEntity("admin", Role.ADMIN));
+        mockAuthentication("admin", Role.ADMIN);
+
+        mockMvc.perform(post("/admin/restaurant/v1")
+                        .content(objectMapper.writeValueAsString(new RestaurantCreateOrUpdateDto().setName("")))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("name cannot be empty"));
+    }
+
+    @Test
+    void testSetMenuWithNegativePrice() throws Exception {
+        userRepository.save(createUserEntity("admin", Role.ADMIN));
+        mockAuthentication("admin", Role.ADMIN);
+        var restaurantGiven = restaurantRepository.save(createRestaurantEntity("restaurant-test"));
+        var menuDtoGiven = new MenuDto()
+                .setMenuItems(List.of(new MenuItem()
+                        .setName("testDish")
+                        .setPrice(new BigDecimal("-10.00"))));
+        mockMvc.perform(post("/admin/restaurant/v1/" + restaurantGiven.getId() + "/menu")
+                        .content(objectMapper.writeValueAsString(menuDtoGiven))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("price should be greater than 0"));
+    }
+
+    @Test
+    void testSetMenuWithNullMenuItemList() throws Exception {
+        userRepository.save(createUserEntity("admin", Role.ADMIN));
+        mockAuthentication("admin", Role.ADMIN);
+        var restaurantGiven = restaurantRepository.save(createRestaurantEntity("restaurant-test"));
+        var menuDtoGiven = new MenuDto();
+        mockMvc.perform(post("/admin/restaurant/v1/" + restaurantGiven.getId() + "/menu")
+                        .content(objectMapper.writeValueAsString(menuDtoGiven))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("menu item list should not be empty"));
+    }
 }

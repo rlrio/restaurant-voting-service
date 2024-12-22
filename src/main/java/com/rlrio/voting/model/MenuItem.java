@@ -12,7 +12,7 @@ public class MenuItem {
     @NotBlank(message = "name cannot be blank")
     private String name;
     @NotNull(message = "price cannot be null")
-    @DecimalMin(value = "0.10", message = "price should be greater than 0")
+    @DecimalMin(value = "0.01", message = "price should be greater than 0")
     @NumberFormat(pattern = "#,###.00")
     private BigDecimal price;
 }

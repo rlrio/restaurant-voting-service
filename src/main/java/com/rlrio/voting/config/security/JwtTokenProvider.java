@@ -75,7 +75,7 @@ public class JwtTokenProvider {
         Claims claims = Jwts.parser()
                 .setSigningKey(secretKey)
                 .build()
-                .parseSignedClaims(token)
+                .parseSignedClaims(getJwtFromRequest(token))
                 .getPayload();
         return claims.getSubject();
     }

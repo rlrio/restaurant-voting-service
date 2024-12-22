@@ -2,6 +2,7 @@ package com.rlrio.voting.service;
 
 import com.rlrio.voting.model.MenuEntity;
 import com.rlrio.voting.repository.MenuRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,10 @@ public class MenuService {
 
     public Optional<MenuEntity> findByRestaurantId(Long restaurantId) {
         return menuRepository.findByRestaurantId(restaurantId);
+    }
+
+    public List<MenuEntity> findByRestaurantIds(List<Long> restaurantId) {
+        return menuRepository.findAllByRestaurantIdIn(restaurantId);
     }
 
     public MenuEntity save(MenuEntity menuEntity) {

@@ -1,6 +1,8 @@
 package com.rlrio.voting.controller.exception;
 
+import com.rlrio.voting.service.exception.NotFoundException;
 import com.rlrio.voting.service.exception.VotingException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -29,6 +31,18 @@ public class VotingExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException exception, WebRequest request) {
         return new ResponseEntity<>(getErrorResponse(HttpStatus.UNAUTHORIZED, request, exception.getMessage()),
                 HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException exception, WebRequest request) {
+        return new ResponseEntity<>(getErrorResponse(HttpStatus.NOT_FOUND, request, exception.getMessage()),
+                HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException exception, WebRequest request) {
+        return new ResponseEntity<>(getErrorResponse(HttpStatus.BAD_REQUEST, request, exception.getMessage()),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(VotingException.class)
