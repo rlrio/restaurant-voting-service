@@ -27,7 +27,7 @@ public class VoteController extends AbstractController {
         voteService.vote(voteDto.getRestaurantId());
     }
 
-    @Operation(summary = "Find amount of votes for restaurants", description = "Allows to get votes by restaurantIds")
+    @Operation(summary = "Find number of votes for restaurants", description = "Allows to get votes by restaurantIds")
     @PostMapping("count")
     public List<CountVoteDto> countVotes(@RequestBody @NotEmpty @Valid List<Long> restaurantIds) {
         return voteService.countVotes(restaurantIds);

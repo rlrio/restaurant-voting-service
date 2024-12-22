@@ -34,6 +34,7 @@ Before starting, ensure you have the following installed on your machine:
    ```
    docker images
    ```
+---
 
 ## 3. Run the Application
    ```
@@ -43,41 +44,37 @@ Before starting, ensure you have the following installed on your machine:
    ```
    http://localhost:9080
    ```
+---
 
 ## 4. Access Swagger
 - The Swagger UI will be available at:
-   `http://localhost:9080/swagger-ui/index.html`
-  
+   `http://localhost:9080/swagger-ui/index.html`  
    Use Swagger to explore and test the API endpoints interactively.
 
-## 5. Access H2 Console
+---
 
+## 5. Access H2 Console
 - If H2 console is enabled in your configuration, it will be accessible at:
   `http://localhost:9080/h2-console`
 - Use the following credentials:
   - JDBC URL: jdbc:h2:mem:testdb
   - Username: sa
   - Password: (leave blank)
-
+---
+  
 ## 6. Use the `ui-test` Profile
 - When you start the application with the ui-test profile, the following test data will be created automatically:
   1. Test Users:
-     - Admin:
-     
-        Username: testAdmin
-     
+     - **Admin**:  
+        Username: testAdmin  
         Password: testAdmin
-     - Regular User:
-       
-       Username: test 
-     
+     - **Regular User**:  
+       Username: test  
        Password: test
-  2. Test Restaurant:
-     
+  2. Test Restaurant:  
      A test restaurant with a predefined test menu.
 
-- Run with ui-test Profile
-  
+- Run with ui-test Profile  
   To start the application with this profile, pass the environment variable `SPRING_PROFILES_ACTIVE=ui-test`:
    ```
   docker run -p 9080:9080 \
