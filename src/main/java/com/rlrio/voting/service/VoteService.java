@@ -7,6 +7,7 @@ import com.rlrio.voting.model.RestaurantEntity;
 import com.rlrio.voting.model.UserEntity;
 import com.rlrio.voting.model.VoteEntity;
 import com.rlrio.voting.repository.VoteRepository;
+import com.rlrio.voting.service.exception.NotFoundException;
 import com.rlrio.voting.service.exception.VotingException;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -39,10 +40,18 @@ public class VoteService {
         var username = SecurityUtil.getCurrentUsername();
         var user = userService.findByUsername(username);
         var restaurant = restaurantService.findById(restaurantId);
-        voteRepository.findOneBy(user.getId(),
-                        LocalDateTime.of(LocalDate.now(), LocalTime.MIN))
-                .ifPresentOrElse(checkAndChangeOrRemoveVote(user, restaurant),
-                        () -> saveNewVote(user, restaurant));
+        voteRepository.findOneBy(user.getId(), null, LocalDateTime.of(LocalDate.now(), LocalTime.MIN))
+                .ifPresentOrElse(processVote(user, restaurant, false), () -> saveNewVote(user, restaurant));
+    }
+
+    @Transactional
+    public void cancelVote(Long restaurantId) {
+        var username = SecurityUtil.getCurrentUsername();
+        var user = userService.findByUsername(username);
+        var restaurant = restaurantService.findById(restaurantId);
+        voteRepository.findOneBy(user.getId(), restaurantId, LocalDateTime.of(LocalDate.now(), LocalTime.MIN))
+                .ifPresentOrElse(processVote(user, restaurant, true),
+                        () -> { throw new NotFoundException(format("vote for the restaurant with id {0} was not found", restaurantId)); });
     }
 
     public List<CountVoteDto> countVotes(List<Long> restaurantIds) {
@@ -63,17 +72,24 @@ public class VoteService {
                         .setVoteDateTime(now()));
     }
 
-    private Consumer<VoteEntity> checkAndChangeOrRemoveVote(UserEntity user, RestaurantEntity restaurant) {
+    private Consumer<VoteEntity> processVote(UserEntity user, RestaurantEntity restaurant, boolean isForCancelling) {
         return vote -> {
-            if (!canVoteAgain()) {
-                var actionMessage = vote.getRestaurant().equals(restaurant) ? "removed" : "changed";
-                throw new VotingException(format("vote cannot be {0} after {1} o''clock", actionMessage, STOP_VOTE_HOUR));
+            validateVotingTime(isForCancelling ? "cancelled" : "changed");
+            var isVotingForSameRestaurant = vote.getRestaurant().equals(restaurant);
+            if (!isForCancelling && isVotingForSameRestaurant) {
+                throw new VotingException(format("you have already voted for the restaurant with id {0} today", restaurant.getId()));
             }
             voteRepository.delete(vote);
-            if (!vote.getRestaurant().equals(restaurant)) {
+            if (!isForCancelling) {
                 saveNewVote(user, restaurant);
             }
         };
+    }
+
+    private void validateVotingTime(String actionMessage) {
+        if (!canVoteAgain()) {
+            throw new VotingException(format("vote cannot be {0} after {1} o''clock", actionMessage, STOP_VOTE_HOUR));
+        }
     }
 
     private boolean canVoteAgain() {

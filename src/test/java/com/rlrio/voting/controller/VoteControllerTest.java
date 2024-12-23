@@ -27,6 +27,7 @@ import static com.rlrio.voting.util.AuthUtil.mockAuthentication;
 import static com.rlrio.voting.util.EntityGenerationUtil.createRestaurantEntity;
 import static com.rlrio.voting.util.EntityGenerationUtil.createUserEntity;
 import static com.rlrio.voting.util.EntityGenerationUtil.createVoteEntity;
+import static java.text.MessageFormat.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -80,7 +81,7 @@ class VoteControllerTest {
     }
 
     @Test
-    void testRemoveVoteBefore11AM() throws Exception {
+    void testCancelVoteBefore11AM() throws Exception {
         mockAuthentication("user", Role.USER);
         when(clock.instant()).thenReturn(Instant.parse("2024-12-22T07:30:00Z"));
         var restaurantGiven = restaurantRepository.save(createRestaurantEntity("restaurant-test"));
@@ -90,7 +91,7 @@ class VoteControllerTest {
                 .setRestaurantId(restaurantGiven.getId());
         assertEquals(1, voteRepository.findAll().size());
 
-        mockMvc.perform(post("/vote/v1")
+        mockMvc.perform(post("/vote/v1/cancel")
                         .content(objectMapper.writeValueAsString(voteDtoGiven))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.OK.value()));
@@ -100,7 +101,7 @@ class VoteControllerTest {
     }
 
     @Test
-    void testRemoveVoteAfter11AM() throws Exception {
+    void testCancelVoteAfter11AM() throws Exception {
         mockAuthentication("user", Role.USER);
         when(clock.instant()).thenReturn(Instant.parse("2024-12-22T11:30:00Z"));
         var restaurantGiven = restaurantRepository.save(createRestaurantEntity("restaurant-test"));
@@ -110,11 +111,11 @@ class VoteControllerTest {
                 .setRestaurantId(restaurantGiven.getId());
         assertEquals(1, voteRepository.findAll().size());
 
-        mockMvc.perform(post("/vote/v1")
+        mockMvc.perform(post("/vote/v1/cancel")
                         .content(objectMapper.writeValueAsString(voteDtoGiven))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("vote cannot be removed after 11 o'clock"));
+                .andExpect(jsonPath("$.message").value("vote cannot be cancelled after 11 o'clock"));
 
         var votesFromDb = voteRepository.findAll();
         assertEquals(1, votesFromDb.size());
@@ -160,6 +161,27 @@ class VoteControllerTest {
         assertEquals(1, votesFromDb.size());
         assertEquals("user", votesFromDb.get(0).getUser().getUsername());
         assertEquals(restaurant2Given, votesFromDb.get(0).getRestaurant());
+    }
+
+    @Test
+    void testVoteSecondTimeForTheDayForTheSameRestaurantBefore11AM() throws Exception {
+        mockAuthentication("user", Role.USER);
+        when(clock.instant()).thenReturn(Instant.parse("2024-12-22T07:30:00Z"));
+        var restaurantGiven = restaurantRepository.save(createRestaurantEntity("restaurant-test"));
+        var userGiven = userRepository.save(createUserEntity("user", Role.USER));
+        voteRepository.save(createVoteEntity(restaurantGiven, userGiven, LocalDateTime.now()));
+        var voteDtoGiven = new VoteDto()
+                .setRestaurantId(restaurantGiven.getId());
+        assertEquals(1, voteRepository.findAll().size());
+
+        mockMvc.perform(post("/vote/v1")
+                        .content(objectMapper.writeValueAsString(voteDtoGiven))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.message").value(format("you have already voted for the restaurant with id {0} today", restaurantGiven.getId())));
+
+        var votesFromDb = voteRepository.findAll();
+        assertEquals(1, votesFromDb.size());
     }
 
     @Test
