@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,10 +57,8 @@ public class VoteService {
         if (CollectionUtils.isEmpty(restaurantIds)) {
             return emptyList();
         }
-        var votesToRestaurantId = voteRepository.findAllByRestaurantIdIn(restaurantIds).stream()
-                .collect(Collectors.groupingBy(it -> it.getRestaurant().getId()));
-
-        return VoteMapper.INSTANCE.toDto(votesToRestaurantId);
+        var restaurantVoteCounts = voteRepository.countVotes(restaurantIds);
+        return VoteMapper.INSTANCE.toDto(restaurantVoteCounts);
     }
 
     private void saveNewVote(UserEntity user, RestaurantEntity restaurant) {

@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class CountVoteDto {
     private Long restaurantId;
-    private int votes;
+    private Long votes;
 }

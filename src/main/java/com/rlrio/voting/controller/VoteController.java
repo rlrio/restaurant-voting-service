@@ -27,7 +27,7 @@ public class VoteController extends AbstractController {
         voteService.vote(voteDto.getRestaurantId());
     }
 
-    @Operation(summary = "Vote for a restaurant", description = "Allows a user to vote for a specific restaurant.")
+    @Operation(summary = "Cancel vote for a restaurant", description = "Allows a user to cancel vote for a specific restaurant before 11AM.")
     @PostMapping("/cancel")
     public void cancelVote(@RequestBody @Valid VoteDto voteDto) {
         voteService.cancelVote(voteDto.getRestaurantId());
